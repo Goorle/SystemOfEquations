@@ -11,20 +11,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Locale;
-import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity {
 
     Button checkResult;
-    TextView equationOneText;
-    TextView equationTwoText;
+    TextView equationText;
 
     EditText answerX1;
     EditText answerX2;
 
-    Equation equationOne;
-    Equation equationTwo;
+    Equation equation;
+
+    final int COEFFICIENT = 10;
 
 
     @Override
@@ -33,15 +32,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         checkResult = findViewById(R.id.buttonCheckResult);
-        equationOneText = findViewById(R.id.equationOne);
-        equationTwoText = findViewById(R.id.equationTwo);
+        equationText = findViewById(R.id.equationOne);
         answerX1 = findViewById(R.id.answerX1);
         answerX2 = findViewById(R.id.answerX2);
 
-        createEquation(100);
+        createEquation(COEFFICIENT);
 
-        setTextEquation(equationOneText, equationOne);
-        setTextEquation(equationTwoText, equationTwo);
+        setTextEquation(equationText, equation);
 
 
         answerX1.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -89,10 +86,9 @@ public class MainActivity extends AppCompatActivity {
                 } else if (Equation.checkResult(Integer.parseInt(result1), Integer.parseInt(result2))) {
                     Toast.makeText(MainActivity.this, "Ответ правильный", Toast.LENGTH_LONG).show();
 
-                    createEquation(100);
+                    createEquation(COEFFICIENT);
 
-                    setTextEquation(equationOneText, equationOne);
-                    setTextEquation(equationTwoText, equationTwo);
+                    setTextEquation(equationText, equation);
 
                     answerX1.setText("");
                     answerX2.setText("");
@@ -105,29 +101,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createEquation(int coefficient){
-        equationOne = new Equation(coefficient);
-        equationTwo = new Equation(coefficient);
+        equation = new Equation(coefficient);
 
         findResultX();
     }
 
     private void findResultX(){
-        int x1 = Math.round(
-                (float) (equationOne.getC() * equationTwo.getB() - equationTwo.getC() * equationOne.getB()) /
-                        (equationOne.getA()*equationTwo.getB() - equationTwo.getA()*equationOne.getB())
-        );
-        int x2 = Math.round(
-                (float) (equationOne.getC()*equationTwo.getA() - equationTwo.getC()*equationOne.getA()) /
-                           (equationOne.getB()*equationTwo.getA() - equationTwo.getB()*equationOne.getA())
-        );
+        double discriminant = Math.sqrt(Math.pow(equation.getB(),2) - 4 * equation.getA() * equation.getC());
+        if(discriminant >= 0) {
+            int x1 = (int) Math.round((-equation.getB() + discriminant) / (2 * equation.getA()));
+            int x2 = (int) Math.round((-equation.getB() - discriminant) / (2 * equation.getA()));
 
-        Equation.setX(x1, x2);
+            Equation.setX(x1, x2);
+        }
+        else{
+            createEquation(COEFFICIENT);
+        }
     }
 
     private void setTextEquation(TextView text, Equation equation){
-        text.setText(String.format(Locale.ENGLISH,"%dX1 + %dX2 = %d",
+        text.setText(String.format(Locale.ENGLISH,"%dX1^2 + %dX2 +%d = 0",
                 equation.getA(),
                 equation.getB(),
                 equation.getC()));
+
     }
 }
